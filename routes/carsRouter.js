@@ -58,12 +58,54 @@ router.get('/:id', (req, res) => {
         })
 })
 
+//Delete a car entry from the DB
+router.delete('/:id', (req, res) => {
+    const { id } = req.params
+
+    db('cars')
+        .where('id', id)
+        .del()
+        .then(count => {
+            if (count) {
+                res.status(200).json({ message: "Record deleted successfully" })
+            }
+            else {
+                res.status(404).json({ errorMessage: "Record not found" })
+            }
+        })
+        .catch(error => {
+            console.log(error)
+            res.status(500).json({ errorMessage: error.message })
+        })
+})
+
+//Update an entry
+router.put('/:id', validateCarData, (req, res) => {
+    const { id } = req.params
+
+    db('cars')
+        .where('id', id)
+        .update(req.carData)
+        .then(count => {
+            if (count) {
+                res.status(200).json({ message: "Record updated successfully" })
+            }
+            else {
+                res.status(404).json({ errorMessage: "Record not found" })
+            }
+        })
+        .catch(error => {
+            console.log(error)
+            res.status(500).json({ errorMessage: error.message })
+        })
+})
+
 //Custom middleware
 function validateCarData(req, res, next) {
     const carData = req.body
 
     if (
-        carData.vin &&
+        carData.VIN &&
         carData.make &&
         carData.model &&
         carData.mileage
@@ -72,7 +114,7 @@ function validateCarData(req, res, next) {
         next()
     }
     else {
-        res.status(400).json({ errorMessage: "Please provide car VIN, Make, Model and Mileage!" })
+        res.status(400).json({ errorMessage: "Please provide car VIN, make, model and mileage!" })
     }
 }
 
